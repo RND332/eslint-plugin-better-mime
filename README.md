@@ -1,52 +1,32 @@
 # eslint-plugin-better-mime
 
-ESLint plugin for validating the `accept` prop on JSX `<input type="file" />` elements.
+Standalone ESLint plugin providing the `validate-file-input-accept` rule.
 
-## Installation
+## Install
 
 ```sh
 npm install --save-dev eslint eslint-plugin-better-mime
 ```
 
-## Rule
-
-### `better-mime/validate-file-input-accept`
-
-Checks statically analyzable `accept` values on `<input type="file" />` and validates them against `mime-types`.
-
-Supported token forms:
-- known MIME types like `image/png`
-- known filename extensions like `.png`
-- top-level wildcard forms like `application/*`, `audio/*`, `font/*`, `haptics/*`, `image/*`, `message/*`, `model/*`, `multipart/*`, `text/*`, and `video/*`
-
-Supported static JSX forms:
-- `accept="image/png, .png"`
-- `accept={"image/png, .png"}`
-- `accept={`image/png, .png`}`
-
-Ignored cases:
-- dynamic expressions such as `accept={fileTypes}`
-- non-`file` inputs
-- custom components like `<Input />`
-
-The rule reports malformed, unknown, duplicate, and badly formatted tokens. When the change is unambiguous, it can auto-fix issues such as:
-- trimming and normalizing spacing
-- removing empty entries
-- lowercasing canonical MIME and extension tokens
-- removing duplicate tokens
-- preferring direct extension tokens like `.ico` over platform-sensitive MIME aliases like `image/x-icon`
-
-## Usage
-
-### Flat config
+## Usage (flat config)
 
 ```js
 const betterMime = require("eslint-plugin-better-mime");
 
-module.exports = [betterMime.configs["flat/recommended"]];
+module.exports = [
+  {
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    plugins: {
+      "better-mime": betterMime,
+    },
+    rules: {
+      "better-mime/validate-file-input-accept": "error",
+    },
+  },
+];
 ```
 
-### Legacy config
+## Usage (legacy config)
 
 ```js
 module.exports = {
@@ -55,18 +35,70 @@ module.exports = {
 };
 ```
 
+## What the rule checks
+
+The rule validates statically analyzable `accept` values on JSX `<input type="file" />` elements.
+
+Supported token forms:
+
+- known MIME types like `image/png`
+- known filename extensions like `.png`
+- top-level wildcard forms like `application/*`, `audio/*`, `font/*`, `haptics/*`, `image/*`, `message/*`, `model/*`, `multipart/*`, `text/*`, and `video/*`
+
+Supported static JSX forms:
+
+- `accept="image/png, .png"`
+- `accept={"image/png, .png"}`
+- `accept={`image/png, .png`}`
+
+Ignored cases:
+
+- dynamic expressions such as `accept={fileTypes}`
+- non-`file` inputs
+- custom components like `<Input />`
+
+The rule can auto-fix safe cases such as:
+
+- normalizing spacing
+- removing empty entries
+- lowercasing canonical MIME and extension tokens
+- removing duplicate tokens
+- preferring direct extension tokens like `.ico` over platform-sensitive MIME aliases like `image/x-icon`
+
 ## Examples
 
-Valid:
+### Fails
+
+```jsx
+<input type="file" accept="IMAGE/PNG,.PNG, image/png" />
+```
+
+This reports non-canonical casing and the duplicate MIME token, and auto-fixes to `image/png, .png`.
+
+```jsx
+<input type="file" accept="image/x-icon" />
+```
+
+This reports the platform-sensitive MIME alias and auto-fixes to `.ico`.
+
+```jsx
+<input type="file" accept="example/*" />
+```
+
+This reports an invalid wildcard because `example/*` is not treated as a real upload MIME wildcard.
+
+### Passes
 
 ```jsx
 <input type="file" accept="image/png, .jpg, image/*" />
 ```
 
-Reported:
+```jsx
+<input type="file" accept="application/epub+zip, .epub, text/*" />
+```
 
 ```jsx
-<input type="file" accept="IMAGE/PNG,.PNG, image/png" />
-<input type="file" accept="image/jpg" />
-<input type="file" accept="png" />
+<input type="file" accept={allowedTypes} />
 ```
+
+Dynamic expressions are ignored because the rule only validates values it can determine statically.
