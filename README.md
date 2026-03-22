@@ -37,7 +37,7 @@ module.exports = {
 
 ## What the rule checks
 
-The rule validates statically analyzable `accept` values on JSX `<input type="file" />` elements.
+The rule requires statically analyzable `accept` values on JSX `<input type="file" />` elements and validates their contents.
 
 Supported token forms:
 
@@ -51,9 +51,13 @@ Supported static JSX forms:
 - `accept={"image/png, .png"}`
 - `accept={`image/png, .png`}`
 
-Ignored cases:
+Rejected cases:
 
 - dynamic expressions such as `accept={fileTypes}`
+- values coming from variables typed too broadly to inspect, such as `string`, `unknown`, or `any`
+
+Still ignored cases:
+
 - non-`file` inputs
 - custom components like `<Input />`
 
@@ -87,6 +91,12 @@ This reports the platform-sensitive MIME alias and auto-fixes to `.ico`.
 
 This reports an invalid wildcard because `example/*` is not treated as a real upload MIME wildcard.
 
+```jsx
+<input type="file" accept={allowedTypes} />
+```
+
+This reports a non-static `accept` value because the rule cannot verify the runtime contents.
+
 ### Passes
 
 ```jsx
@@ -96,9 +106,3 @@ This reports an invalid wildcard because `example/*` is not treated as a real up
 ```jsx
 <input type="file" accept="application/epub+zip, .epub, text/*" />
 ```
-
-```jsx
-<input type="file" accept={allowedTypes} />
-```
-
-Dynamic expressions are ignored because the rule only validates values it can determine statically.

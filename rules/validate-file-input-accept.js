@@ -235,11 +235,11 @@ module.exports = {
     schema: [],
     messages: {
       invalidAcceptValue: "Invalid file input accept value: {{details}}.",
+      nonStaticAcceptValue:
+        "File input accept value must be a static string so it can be validated.",
     },
   },
   create(context) {
-    const sourceCode = context.sourceCode;
-
     return {
       JSXOpeningElement(node) {
         if (!isInputElement(node)) {
@@ -255,6 +255,12 @@ module.exports = {
         const acceptAttribute = getAttribute(node, "accept");
         const acceptValue = getStaticStringValue(acceptAttribute);
         if (!acceptValue) {
+          if (acceptAttribute && acceptAttribute.value) {
+            context.report({
+              node: acceptAttribute.value,
+              messageId: "nonStaticAcceptValue",
+            });
+          }
           return;
         }
 

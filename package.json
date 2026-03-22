@@ -2,13 +2,6 @@
   "name": "eslint-plugin-better-mime",
   "version": "1.0.0",
   "description": "ESLint plugin for validating file input accept MIME declarations.",
-  "main": "index.js",
-  "exports": {
-    ".": "./index.js"
-  },
-  "scripts": {
-    "test": "node --test"
-  },
   "keywords": [
     "eslint",
     "eslintplugin",
@@ -16,20 +9,38 @@
     "jsx",
     "react"
   ],
-  "author": "",
+  "homepage": "https://github.com/RND332/eslint-plugin-better-mime#readme",
+  "bugs": {
+    "url": "https://github.com/RND332/eslint-plugin-better-mime/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RND332/eslint-plugin-better-mime.git"
+  },
   "license": "ISC",
+  "author": "RND332",
   "type": "commonjs",
+  "exports": {
+    ".": "./index.js"
+  },
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
   "files": [
     "index.js",
     "rules"
   ],
-  "peerDependencies": {
-    "eslint": "^9.0.0 || ^10.0.0"
+  "scripts": {
+    "test": "node --test"
   },
   "dependencies": {
     "mime-types": "^3.0.2"
   },
   "devDependencies": {
     "eslint": "^10.1.0"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0 || ^10.0.0"
   }
 }

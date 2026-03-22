@@ -31,9 +31,26 @@ test("validate-file-input-accept", () => {
       '<input type="file" accept="video/webm, .webm, video/3gpp, .3gp" />',
       '<input type="text" accept="image/png" />',
       '<Input type="file" accept="image/png" />',
-      '<input type="file" accept={allowedTypes} />',
     ],
     invalid: [
+      {
+        code: '<input type="file" accept={allowedTypes} />',
+        errors: [
+          {
+            message:
+              "File input accept value must be a static string so it can be validated.",
+          },
+        ],
+      },
+      {
+        code: '<input type="file" accept={condition ? "image/png" : allowedTypes} />',
+        errors: [
+          {
+            message:
+              "File input accept value must be a static string so it can be validated.",
+          },
+        ],
+      },
       {
         code: '<input type="file" accept="image/jpg" />',
         errors: [
