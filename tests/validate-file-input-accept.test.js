@@ -29,6 +29,9 @@ test("validate-file-input-accept", () => {
       '<input type="file" accept="image/vnd.microsoft.icon, .ico" />',
       '<input type="file" accept="image/svg+xml, .svgz, application/vnd.apple.mpegurl, .m3u8" />',
       '<input type="file" accept="video/webm, .webm, video/3gpp, .3gp" />',
+      '<input type="file" accept="image/x-icon" />',
+      '<input type="file" accept="application/x-rar-compressed" />',
+      '<input type="file" accept="image/x-icon, .ico" />',
       '<input type="text" accept="image/png" />',
       '<Input type="file" accept="image/png" />',
     ],
@@ -76,6 +79,26 @@ test("validate-file-input-accept", () => {
           {
             message:
               'Invalid file input accept value: remove empty accept entries.',
+          },
+        ],
+      },
+      {
+        code: '<input type="file" accept="   " />',
+        output: null,
+        errors: [
+          {
+            message:
+              'Invalid file input accept value: remove empty accept entries.',
+          },
+        ],
+      },
+      {
+        code: '<input type="file" accept=",,," />',
+        output: null,
+        errors: [
+          {
+            message:
+              'Invalid file input accept value: remove empty accept entries; remove empty accept entries; remove empty accept entries; remove empty accept entries.',
           },
         ],
       },
@@ -132,36 +155,6 @@ test("validate-file-input-accept", () => {
           {
             message:
               'Invalid file input accept value: "application/alto-costmap+json" is not a known MIME type.',
-          },
-        ],
-      },
-      {
-        code: '<input type="file" accept="image/x-icon" />',
-        output: '<input type="file" accept=".ico" />',
-        errors: [
-          {
-            message:
-              'Invalid file input accept value: prefer extension token ".ico" over MIME token "image/x-icon" for broader platform compatibility.',
-          },
-        ],
-      },
-      {
-        code: '<input type="file" accept="application/x-rar-compressed" />',
-        output: '<input type="file" accept=".rar" />',
-        errors: [
-          {
-            message:
-              'Invalid file input accept value: prefer extension token ".rar" over MIME token "application/x-rar-compressed" for broader platform compatibility.',
-          },
-        ],
-      },
-      {
-        code: '<input type="file" accept="image/x-icon, .ico" />',
-        output: '<input type="file" accept=".ico" />',
-        errors: [
-          {
-            message:
-              'Invalid file input accept value: prefer extension token ".ico" over MIME token "image/x-icon" for broader platform compatibility; remove duplicate token ".ico".',
           },
         ],
       },

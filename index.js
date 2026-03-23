@@ -1,4 +1,5 @@
 const validateFileInputAccept = require("./rules/validate-file-input-accept");
+const preferFormatOverMime = require("./rules/prefer-format-over-mime");
 const packageJson = require("./package.json");
 
 const plugin = {
@@ -7,6 +8,7 @@ const plugin = {
     version: packageJson.version,
   },
   rules: {
+    "prefer-format-over-mime": preferFormatOverMime,
     "validate-file-input-accept": validateFileInputAccept,
   },
   configs: {},
