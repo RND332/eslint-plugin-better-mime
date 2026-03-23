@@ -8,6 +8,8 @@ Standalone ESLint plugin providing focused rules for JSX file-input `accept` val
 npm install --save-dev eslint eslint-plugin-better-mime
 ```
 
+The package ships bundled TypeScript declarations for the plugin export.
+
 ## Rules
 
 - [`validate-file-input-accept`](./rules/validate-file-input-accept.md) validates static `accept` values, rejects malformed tokens, and normalizes canonical formatting.

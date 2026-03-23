@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-better-mime",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "ESLint plugin for validating and normalizing file input accept declarations.",
   "keywords": [
     "eslint",
@@ -20,14 +20,19 @@
   "license": "ISC",
   "author": "RND332",
   "type": "commonjs",
+  "types": "./index.d.ts",
   "exports": {
-    ".": "./index.js"
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
   },
   "main": "index.js",
   "directories": {
     "test": "tests"
   },
   "files": [
+    "index.d.ts",
     "index.js",
     "rules"
   ],
