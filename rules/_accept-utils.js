@@ -43,7 +43,93 @@ function getAttribute(node, name) {
   );
 }
 
-function getStaticStringValue(attribute) {
+function getTemplateLiteralStringValue(node) {
+  if (node.type !== "TemplateLiteral" || node.expressions.length !== 0) {
+    return null;
+  }
+
+  return node.quasis[0].value.cooked ?? node.quasis[0].value.raw;
+}
+
+function isConstAssertion(typeAnnotation) {
+  return (
+    typeAnnotation &&
+    typeAnnotation.type === "TSTypeReference" &&
+    typeAnnotation.typeName &&
+    typeAnnotation.typeName.type === "Identifier" &&
+    typeAnnotation.typeName.name === "const"
+  );
+}
+
+function getReadonlyStringValueFromExpression(
+  expression,
+  sourceCode,
+  visitedVariables = new Set(),
+  hasConstAssertion = false,
+) {
+  if (!expression) {
+    return null;
+  }
+
+  if (expression.type === "Literal" && typeof expression.value === "string") {
+    return hasConstAssertion
+      ? {
+          value: expression.value,
+        }
+      : null;
+  }
+
+  const templateLiteralValue = getTemplateLiteralStringValue(expression);
+  if (templateLiteralValue !== null) {
+    return hasConstAssertion
+      ? {
+          value: templateLiteralValue,
+        }
+      : null;
+  }
+
+  if (expression.type === "TSAsExpression" && isConstAssertion(expression.typeAnnotation)) {
+    return getReadonlyStringValueFromExpression(
+      expression.expression,
+      sourceCode,
+      visitedVariables,
+      true,
+    );
+  }
+
+  if (expression.type !== "Identifier" || !sourceCode) {
+    return null;
+  }
+
+  const scope = sourceCode.getScope(expression);
+  const reference = scope.references.find((candidate) => candidate.identifier === expression);
+  const variable = reference && reference.resolved;
+  if (!variable || visitedVariables.has(variable)) {
+    return null;
+  }
+
+  visitedVariables.add(variable);
+
+  const definition = variable.defs[0];
+  if (
+    !definition ||
+    definition.type !== "Variable" ||
+    !definition.parent ||
+    definition.parent.type !== "VariableDeclaration" ||
+    definition.parent.kind !== "const"
+  ) {
+    return null;
+  }
+
+  return getReadonlyStringValueFromExpression(
+    definition.node.init,
+    sourceCode,
+    visitedVariables,
+    hasConstAssertion,
+  );
+}
+
+function getStaticStringValue(attribute, sourceCode) {
   if (!attribute || !attribute.value) {
     return null;
   }
@@ -70,24 +156,37 @@ function getStaticStringValue(attribute) {
     };
   }
 
-  if (expression.type === "TemplateLiteral" && expression.expressions.length === 0) {
+  const templateLiteralValue = getTemplateLiteralStringValue(expression);
+  if (templateLiteralValue !== null) {
     return {
-      value: expression.quasis[0].value.cooked ?? expression.quasis[0].value.raw,
+      value: templateLiteralValue,
       valueNode: attribute.value,
       canFix: true,
     };
   }
 
-  return null;
+  const readonlyStringValue = getReadonlyStringValueFromExpression(
+    expression,
+    sourceCode,
+  );
+  if (!readonlyStringValue) {
+    return null;
+  }
+
+  return {
+    value: readonlyStringValue.value,
+    valueNode: attribute.value,
+    canFix: false,
+  };
 }
 
-function getAcceptLintTarget(node) {
+function getAcceptLintTarget(node, sourceCode) {
   if (!isInputElement(node)) {
     return null;
   }
 
   const typeAttribute = getAttribute(node, "type");
-  const typeValue = getStaticStringValue(typeAttribute);
+  const typeValue = getStaticStringValue(typeAttribute, sourceCode);
   if (!typeValue || typeValue.value.toLowerCase() !== "file") {
     return null;
   }
@@ -96,7 +195,7 @@ function getAcceptLintTarget(node) {
 
   return {
     acceptAttribute,
-    acceptValue: getStaticStringValue(acceptAttribute),
+    acceptValue: getStaticStringValue(acceptAttribute, sourceCode),
   };
 }
 

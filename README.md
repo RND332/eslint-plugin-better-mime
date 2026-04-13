@@ -63,11 +63,12 @@ Supported static JSX forms:
 - `accept="image/png, .png"`
 - `accept={"image/png, .png"}`
 - `accept={`image/png, .png`}`
+- `accept={AudioAttachmentMIMEType}` when `AudioAttachmentMIMEType` resolves to a TypeScript `const` string literal declared with `as const`
 
 Rejected cases:
 
 - dynamic expressions such as `accept={fileTypes}`
-- values coming from variables typed too broadly to inspect, such as `string`, `unknown`, or `any`
+- variable references that are not readonly string literals the rule can trace, such as plain `const` strings, `let` bindings, or values typed too broadly as `string`, `unknown`, or `any`
 
 Still ignored cases:
 
@@ -111,6 +112,16 @@ This reports an invalid wildcard because `example/*` is not treated as a real up
 ```
 
 This reports a non-static `accept` value because the rule cannot verify the runtime contents.
+
+```tsx
+// ✅
+export const AudioAttachmentMIMEType =
+  'audio/mpeg, audio/wav, audio/aac, audio/ogg, audio/webm' as const;
+
+<input type="file" accept={AudioAttachmentMIMEType} />
+```
+
+This passes because the rule can trace a TypeScript `const` identifier with an `as const` string literal initializer.
 
 ### `prefer-format-over-mime` fails
 

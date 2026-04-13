@@ -23,7 +23,7 @@ module.exports = {
   create(context) {
     return {
       JSXOpeningElement(node) {
-        const target = getAcceptLintTarget(node);
+        const target = getAcceptLintTarget(node, context.sourceCode);
         if (!target) {
           return;
         }
